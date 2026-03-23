@@ -21,23 +21,49 @@ Para cada algoritmo, se debe medir el tiempo de ejecución y estimar el uso de m
 
 ## Solución planteada
 
-La solución se implementa en C++ utilizando la biblioteca estándar (STL) para aprovechar contenedores eficientes como vector y algoritmos optimizados. El programa lee el archivo dataset.txt, aplica los tres algoritmos de ordenamiento sobre copias independientes del dataset para garantizar condiciones equitativas, mide los tiempos de ejecución con alta precisión utilizando la biblioteca chrono, estima el uso de memoria basado en el tamaño de las estructuras de datos y el contenido de las cadenas, y presenta un análisis comparativo con las complejidades teóricas.
+La solución está implementada en C++ (GNU++17) y ejecuta una simulación completa de tres algoritmos de ordenamiento sobre el mismo dataset. El programa lee el archivo `dataset.txt`, detecta y decodifica UTF-16 LE (BOM `FF FE`) o cae a UTF-8/ASCII, carga las palabras en un `vector<string>`, y luego ejecuta:
+
+1. QuickSort (con mejoras de pivot mediana de tres, Insertion Sort para segmentos de tamaño <= 20 y TCO manual de pila).
+2. HeapSort (construcción de max-heap y extracción iterativa en un arreglo in-place).
+3. Árbol AVL (inserción de todas las palabras en un BST balanceado y recorrido inorden para generar la ordenación de valores únicos).
+
+Para cada algoritmo, el programa mide el tiempo de ejecución (milisegundos), muestra las primeras 5 palabras ordenadas, estima memoria utilizada y compara el comportamiento real.
 
 ### Funcionalidades
 
-- **Lectura del dataset**: Función `leerDataset` que abre el archivo en modo binario, salta el BOM (Byte Order Mark) de UTF-16 LE, lee los caracteres de a 2 bytes, reconstruye los valores Unicode y construye un vector de strings con todas las palabras del dataset.
+- Lectura robusta del dataset en `leerDataset`:
+  - modo binario, detección de BOM UTF-16 LE
+  - parsing de lineas para UTF-8/ASCII
+  - manejo de CR/LF, salta lineas vacías
 
-- **Implementación de QuickSort**: Algoritmo de ordenamiento rápido que utiliza particionamiento recursivo sobre un vector<string>, con pivote en el último elemento y partición in-place.
+- QuickSort:
+  - `medianaDeTres` para elegir pivote estable
+  - `particion` con intercambio in-place
+  - `quickSortHelper` con recursion en rama corta + bucle (TCO manual)
+  - `insertionSort` en subsegmentos de longitud <= 20
 
-- **Implementación de HeapSort**: Algoritmo de ordenamiento por montículo que construye un max-heap sobre el vector y extrae el máximo repetidamente, operando in-place sin memoria adicional significativa.
+- HeapSort:
+  - `heapify` para max-heap
+  - construcción del heap en O(n)
+  - extracción ordenada intercambiando `arr[0]` con `arr[i]` y heapificando
 
-- **Implementación de Árbol AVL**: Estructura de árbol binario de búsqueda balanceado que inserta todas las palabras, rebalanceando automáticamente tras cada inserción mediante rotaciones, y realiza un recorrido inorder para obtener la secuencia ordenada.
+- Árbol AVL:
+  - `ArbolAVL` con rotaciones (`rotarIzquierda`, `rotarDerecha`) y rebalanceo automático
+  - `insertar` ignora duplicados (conjunto ordenado)
+  - `inorden` genera orden ascendente de palabras únicas
+  - `alturaTotal`, `totalNodos` para métricas internas
 
-- **Medición de tiempos**: Utiliza `chrono::high_resolution_clock` para capturar instantes precisos antes y después de cada ordenamiento, calculando la duración en milisegundos.
+- Métricas y reportes:
+  - Cronometría con `chrono::high_resolution_clock`
+  - `reportarMemoria`:
+    - Estimaciones separadas para vector (QuickSort/HeapSort) y árbol AVL
+    - Cálculo aproximado en KB de uso de memoria
+    - Inspección de pila de recursion para QuickSort y altura de árbol AVL
 
-- **Estimación de memoria**: Función `reportarMemoria` que calcula el uso aproximado de memoria basado en el tamaño de los objetos (vector, nodos AVL) y el contenido de las cadenas, diferenciando entre estructuras para vector y árbol.
-
-- **Análisis comparativo**: Imprime una tabla con tiempos medidos, complejidades temporales y espaciales, y conclusiones sobre el rendimiento práctico de cada algoritmo.
+- Comparativo y conclusiones:
+  - Tabla de tiempos y complejidad asintótica en pantalla
+  - Impresión de la estructura con el mejor tiempo
+  - Análisis cualitativo de localización de memoria y constantes ocultas
 
 ## Autores
 
